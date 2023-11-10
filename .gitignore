@@ -1,6 +1,6 @@
+seedTable.js
 *.js
 !jest.config.js
-!seedTable.js
 *.d.ts
 node_modules
 .env

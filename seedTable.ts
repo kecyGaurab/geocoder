@@ -1,6 +1,5 @@
-import dotenv from 'dotenv';
-import pkg from 'aws-sdk';
-const { config, DynamoDB } = pkg;
+import * as dotenv from 'dotenv';
+import { config, DynamoDB } from 'aws-sdk';
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,13 +15,18 @@ config.update({
 // Create a DynamoDB document client
 const docClient = new DynamoDB.DocumentClient();
 
+// Define a type for street coordinates
+type StreetCoordinates = {
+  [streetName: string]: { latitude: number; longitude: number };
+};
+
 // Dummy data with name and coordinates
-const streetCoordinates = {
+const streetCoordinates: StreetCoordinates = {
   'Elm Street': { latitude: 40.7, longitude: -74.0 },
   'Maple Avenue': { latitude: 40.71, longitude: -74.01 },
   'Oak Road': { latitude: 40.72, longitude: -74.02 },
-  'Cedar Lane': { latitude: 40.73, longitude: -74.03 },
-  'Willow Street': { latitude: 40.74, longitude: -74.04 },
+  'Oakley Lane': { latitude: 40.73, longitude: -74.03 },
+  'Elmo Street': { latitude: 40.74, longitude: -74.04 },
 };
 
 // Street names
@@ -32,7 +36,7 @@ const streetNames = Object.keys(streetCoordinates);
 const usedCoordinates = new Set();
 
 // Function to generate unique coordinates for a given street
-function getUniqueCoordinates(streetName, addressNumber) {
+function getUniqueCoordinates(streetName: string, addressNumber: number) {
   const streetCoordinate = streetCoordinates[streetName];
   if (!streetCoordinate) {
     throw new Error(`Invalid street name: ${streetName}`);
@@ -64,11 +68,11 @@ async function seedTable() {
     const streetName = streetNames[streetIndex];
 
     for (let addressNumber = 1; addressNumber <= 10; addressNumber++) {
-      const streetAddress = `${streetName} ${addressNumber}`
+      const streetAddress = `${streetName} ${addressNumber}`;
       const { latitude, longitude } = getUniqueCoordinates(streetName, addressNumber);
 
-      const params = {
-        TableName: tableName,
+      const params: DynamoDB.DocumentClient.PutItemInput = {
+        TableName: tableName!,
         Item: {
           id: uuidv4(),
           streetAddress,
@@ -83,7 +87,11 @@ async function seedTable() {
         await docClient.put(params).promise();
         console.log(`Inserted item ${streetAddress}`);
       } catch (err) {
-        console.error(`Error inserting item ${streetAddress}: ${err.message}`);
+        if (err instanceof Error) {
+          console.error(`Error inserting item ${streetAddress}: ${err.message}`);
+        } else {
+          console.error(`An unknown error occurred: ${err}`);
+        }
       }
     }
   }

@@ -58,7 +58,6 @@ DYNAMODB_TABLE_NAME=your-dynamodb-table-name
     ```
 2. Deploy the AWS CDK stack to create the necessary AWS resources (DynamoDB table, Lambda function, API Gateway):
     ```sh
-    cd cdk
     npm install  # Install CDK dependencies
     cdk deploy
     ```
